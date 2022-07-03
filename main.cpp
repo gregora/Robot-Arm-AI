@@ -2,6 +2,7 @@
 #include "include/arm.h"
 #include <stdio.h>
 #include <iostream>
+#include <sys/stat.h>
 
 using namespace std;
 using namespace nnlib;
@@ -9,7 +10,9 @@ using namespace nnlib;
 #define TIME 7
 #define SAMPLES 20
 
-void render(Arm a, Network* n, float time);
+void render(Arm a, Network* n);
+void save_population(Network ** networks, uint population, string folder);
+void load_population(Network ** networks, uint population, string folder);
 
 float evaluate(Network* n, float target_x, float target_y){
 		Arm a({1,1,1}, 5);
@@ -90,21 +93,25 @@ int main(int argsn, char** args){
 
 	Network * networks[POPULATION];
 
-	for(int i = 0; i < POPULATION; i++){
-		networks[i] = new Network();
+	if(generation == 0){
 
-		if(generation == 0){
-			Dense* d1 = new Dense(5, 5);
-			Dense* d2 = new Dense(5, 3);
+		for(int i = 0; i < POPULATION; i++){
+			networks[i] = new Network();
 
-			d1 -> setActivationFunction(atan);
-			d2 -> setActivationFunction(atan);
+			if(generation == 0){
+				Dense* d1 = new Dense(5, 5);
+				Dense* d2 = new Dense(5, 3);
 
-			networks[i] -> addLayer(d1);
-			networks[i] -> addLayer(d2);
-		}else{
-			networks[i] -> load("networks/" + to_string(generation) + ".AI");
+				d1 -> setActivationFunction(atan);
+				d2 -> setActivationFunction(atan);
+
+				networks[i] -> addLayer(d1);
+				networks[i] -> addLayer(d2);
+			}
 		}
+
+	}else{
+		load_population(networks, POPULATION, "networks/"+to_string(generation)+"/");
 	}
 
 	gen_settings settings = {
@@ -126,7 +133,7 @@ int main(int argsn, char** args){
 
 	if(!display){
 		genetic(networks, evaluate, settings);
-		networks[0] -> save("networks/" + to_string(generation + GENERATIONS - 1) + ".AI");
+		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS - 1)+"/");
 	}else{
 		Arm a({1,1,1}, 5);
 		render(a, networks[0], 20);
@@ -136,7 +143,7 @@ int main(int argsn, char** args){
 }
 
 
-void render(Arm a, Network* n, float time){
+void render(Arm a, Network* n){
 
 	int WIDTH = 800;
 	int HEIGHT = 600;
@@ -200,10 +207,6 @@ void render(Arm a, Network* n, float time){
 
 
 		passed+=delta.asSeconds();
-		if(passed >= time){
-			window.close();
-			return;
-		}
 
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -216,4 +219,22 @@ void render(Arm a, Network* n, float time){
 
 	}
 
+}
+
+
+void save_population(Network ** networks, uint population, string folder){
+
+	mkdir(folder.c_str(), 0777);
+
+	for(uint i = 0; i < population; i++){
+		networks[i] -> save(folder + to_string(i) + ".AI");
+	}
+
+}
+
+void load_population(Network ** networks, uint population, string folder){
+	for(uint i = 0; i < population; i++){
+		networks[i] = new Network;
+		networks[i] -> load(folder + to_string(i) + ".AI");
+	}
 }

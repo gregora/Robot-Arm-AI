@@ -6,8 +6,8 @@
 using namespace std;
 using namespace nnlib;
 
-#define TIME 5
-#define SAMPLES 5
+#define TIME 7
+#define SAMPLES 20
 
 void render(Arm a, Network* n, float time);
 
@@ -58,8 +58,8 @@ void evaluate(Network* n, float* score){
 	float y = 0;
 
 	for(int i = 0; i < SAMPLES; i++){
-		x = (float) (134234*i % 2000);
-		y = (float) (852343*i % 2000);
+		x = (float) (134234*i % 4000 - 2000);
+		y = (float) (852343*i % 4000 - 2000);
 		*score += evaluate(n, y / 1000, x / 1000);
 	}
 
@@ -154,6 +154,15 @@ void render(Arm a, Network* n, float time){
 	float passed = 0;
 	while (window.isOpen())
 	{
+
+
+		sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+		sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
+		target_x = worldPos.x;
+		target_y = -worldPos.y;
+
+		printf("%f %f\n", target_x, target_y);
+
 		window.clear(sf::Color::Black);
 
 		sf::Time delta = clock.restart();
@@ -177,6 +186,13 @@ void render(Arm a, Network* n, float time){
 		a.applySpeeds(speeds);
 		a.physics(delta.asSeconds());
 
+
+		sf::CircleShape target(0.05);
+		target.setFillColor(sf::Color(255, 0, 0));
+
+		target.setPosition(target_x, -target_y);
+
+		window.draw(target);
 		window.draw(a);
 
 		// end the current frame

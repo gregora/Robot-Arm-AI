@@ -7,8 +7,6 @@ using namespace std;
 using namespace nnlib;
 
 #define TIME 5
-#define POPULATION 60
-#define GENERATIONS 100
 #define SAMPLES 5
 
 void render(Arm a, Network* n, float time);
@@ -68,20 +66,45 @@ void evaluate(Network* n, float* score){
 	*score = *score / 5;
 }
 
-int main(){
+int main(int argsn, char** args){
+
+	int generation = 0;
+	bool display = false;
+
+	int POPULATION = 100;
+	int GENERATIONS = 100;
+
+	for(int i = 0; i < argsn; i++){
+		if(strcmp(args[i], "-load") == 0){
+			generation = atol(args[i + 1]);
+		}else if(strcmp(args[i], "-display") == 0){
+			generation = atol(args[i + 1]);
+			display = true;
+		}else if(strcmp(args[i], "-population") == 0){
+			POPULATION = atoi(args[i + 1]);
+		}else if(strcmp(args[i], "-generations") == 0){
+			GENERATIONS = atoi(args[i + 1]);
+		}
+
+	}
 
 	Network * networks[POPULATION];
 
 	for(int i = 0; i < POPULATION; i++){
 		networks[i] = new Network();
-		Dense* d1 = new Dense(5, 5);
-		Dense* d2 = new Dense(5, 3);
 
-		d1 -> setActivationFunction(atan);
-		d2 -> setActivationFunction(atan);
+		if(generation == 0){
+			Dense* d1 = new Dense(5, 5);
+			Dense* d2 = new Dense(5, 3);
 
-		networks[i] -> addLayer(d1);
-		networks[i] -> addLayer(d2);
+			d1 -> setActivationFunction(atan);
+			d2 -> setActivationFunction(atan);
+
+			networks[i] -> addLayer(d1);
+			networks[i] -> addLayer(d2);
+		}else{
+			networks[i] -> load("networks/" + to_string(generation) + ".AI");
+		}
 	}
 
 	gen_settings settings = {
@@ -95,13 +118,20 @@ int main(){
 		max: 5, //maximum value for weights / biases
 
 		recompute_parents: false, //recompute parents (for non-deterministic evaluation functions)
-		multithreading: true
+		multithreading: true,
+
+		output: true,
+		start_generation: generation
 	};
 
-	genetic(networks, evaluate, settings);
+	if(!display){
+		genetic(networks, evaluate, settings);
+		networks[0] -> save("networks/" + to_string(generation + GENERATIONS - 1) + ".AI");
+	}else{
+		Arm a({1,1,1}, 5);
+		render(a, networks[0], 20);
+	}
 
-	Arm a({1,1,1}, 5);
-	render(a, networks[0], 20);
 
 }
 

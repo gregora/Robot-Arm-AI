@@ -136,7 +136,7 @@ int main(int argsn, char** args){
 		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS - 1)+"/");
 	}else{
 		Arm a({1,1,1}, 5);
-		render(a, networks[0], 20);
+		render(a, networks[0]);
 	}
 
 

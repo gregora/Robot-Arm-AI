@@ -6,14 +6,107 @@
 using namespace std;
 using namespace nnlib;
 
-void render(Arm a, float time);
+#define TIME 5
+#define POPULATION 60
+#define GENERATIONS 100
+#define SAMPLES 5
+
+void render(Arm a, Network* n, float time);
+
+float evaluate(Network* n, float target_x, float target_y){
+		Arm a({1,1,1}, 5);
+
+		float delta = 1/60.0f;
+		float passed = 0;
+
+		float motors_speed;
+
+		while(passed <= TIME){
+
+			float angles[3];
+			a.getAngles(angles);
+
+			Matrix input(1, 5);
+			input.setValue(0, 0, angles[0]);
+			input.setValue(0, 1, angles[1]);
+			input.setValue(0, 2, angles[2]);
+			input.setValue(0, 3, target_x);
+			input.setValue(0, 4, target_y);
+
+			Matrix output = n -> eval(&input);
+
+			vector<float> speeds = {0,0,0};
+			speeds[0] = output.getValue(0, 0);
+			speeds[1] = output.getValue(0, 1);
+			speeds[2] = output.getValue(0, 2);
+
+			//printf("%f %f %f\n", speeds[0], speeds[1], speeds[2]);
+			motors_speed =  + abs(speeds[0]) + abs(speeds[1]) + abs(speeds[2]);
+
+			a.applySpeeds(speeds);
+			a.physics(delta);
+
+			passed += delta;
+		}
+
+	 	return abs(a.getArmLocation().x - target_x) + abs(a.getArmLocation().y - target_y) + motors_speed;
+}
+
+void evaluate(Network* n, float* score){
+
+	*score = 0;
+
+	float x = 0;
+	float y = 0;
+
+	for(int i = 0; i < SAMPLES; i++){
+		x = (float) (134234*i % 2000);
+		y = (float) (852343*i % 2000);
+		*score += evaluate(n, y / 1000, x / 1000);
+	}
+
+	*score = *score / 5;
+}
 
 int main(){
-	Arm a({1,1,1}, 2);
+
+	Network * networks[POPULATION];
+
+	for(int i = 0; i < POPULATION; i++){
+		networks[i] = new Network();
+		Dense* d1 = new Dense(5, 5);
+		Dense* d2 = new Dense(5, 3);
+
+		d1 -> setActivationFunction(atan);
+		d2 -> setActivationFunction(atan);
+
+		networks[i] -> addLayer(d1);
+		networks[i] -> addLayer(d2);
+	}
+
+	gen_settings settings = {
+		population: POPULATION,
+		generations: GENERATIONS, //number of generations to run
+		mutations: 1, //number of mutations on each child
+
+		rep_coef: 0.5, //percent of population to reproduce
+
+		min: -5, //minimum value for weights / biases
+		max: 5, //maximum value for weights / biases
+
+		recompute_parents: false, //recompute parents (for non-deterministic evaluation functions)
+		multithreading: true
+	};
+
+	genetic(networks, evaluate, settings);
+
+	Arm a({1,1,1}, 5);
+	render(a, networks[0], 20);
+
 }
 
 
-void render(Arm a, float time){
+void render(Arm a, Network* n, float time){
 
 	int WIDTH = 800;
 	int HEIGHT = 600;
@@ -24,6 +117,9 @@ void render(Arm a, float time){
 	view.zoom(0.03);
 	window.setView(view);
 
+	float target_x = 1;
+	float target_y = 1;
+
 	sf::Clock clock;
 	float passed = 0;
 	while (window.isOpen())
@@ -31,7 +127,25 @@ void render(Arm a, float time){
 		window.clear(sf::Color::Black);
 
 		sf::Time delta = clock.restart();
-		a.physics(delta.asSeconds(), true);
+		float angles[3];
+		a.getAngles(angles);
+
+		Matrix input(1, 5);
+		input.setValue(0, 0, angles[0]);
+		input.setValue(0, 1, angles[1]);
+		input.setValue(0, 2, angles[2]);
+		input.setValue(0, 3, target_x);
+		input.setValue(0, 4, target_y);
+
+		Matrix output = n -> eval(&input);
+
+		vector<float> speeds = {0,0,0};
+		speeds[0] = output.getValue(0, 0);
+		speeds[1] = output.getValue(0, 1);
+		speeds[2] = output.getValue(0, 2);
+
+		a.applySpeeds(speeds);
+		a.physics(delta.asSeconds());
 
 		window.draw(a);
 

@@ -14,8 +14,7 @@ void render(Arm a, Network* n);
 void save_population(Network ** networks, uint population, string folder);
 void load_population(Network ** networks, uint population, string folder);
 
-float evaluate(Network* n, float target_x, float target_y){
-		Arm a({1,1,1}, 5);
+float evaluate(Arm* a, Network* n, float target_x, float target_y){
 
 		float delta = 1/60.0f;
 		float passed = 0;
@@ -25,7 +24,7 @@ float evaluate(Network* n, float target_x, float target_y){
 		while(passed <= TIME){
 
 			float angles[3];
-			a.getAngles(angles);
+			a -> getAngles(angles);
 
 			Matrix input(1, 5);
 			input.setValue(0, 0, angles[0]);
@@ -41,19 +40,20 @@ float evaluate(Network* n, float target_x, float target_y){
 			speeds[1] = output.getValue(0, 1);
 			speeds[2] = output.getValue(0, 2);
 
-			//printf("%f %f %f\n", speeds[0], speeds[1], speeds[2]);
-			motors_speed =  + abs(speeds[0]) + abs(speeds[1]) + abs(speeds[2]);
+			motors_speed = abs(speeds[0]) + abs(speeds[1]) + abs(speeds[2]);
 
-			a.applySpeeds(speeds);
-			a.physics(delta);
+			a -> applySpeeds(speeds);
+			a -> physics(delta);
 
 			passed += delta;
 		}
 
-	 	return abs(a.getArmLocation().x - target_x) + abs(a.getArmLocation().y - target_y) + motors_speed;
+	 	return abs(a -> getArmLocation().x - target_x) + abs(a -> getArmLocation().y - target_y) + motors_speed;
 }
 
 void evaluate(Network* n, float* score){
+
+	Arm a({1,1,1}, 5);
 
 	*score = 0;
 
@@ -63,7 +63,7 @@ void evaluate(Network* n, float* score){
 	for(int i = 0; i < SAMPLES; i++){
 		x = (float) (134234*i % 4000 - 2000);
 		y = (float) (852343*i % 4000 - 2000);
-		*score += evaluate(n, y / 1000, x / 1000);
+		*score += evaluate(&a, n, y / 1000, x / 1000);
 	}
 
 	*score = *score / 5;
@@ -100,13 +100,16 @@ int main(int argsn, char** args){
 
 			if(generation == 0){
 				Dense* d1 = new Dense(5, 5);
-				Dense* d2 = new Dense(5, 3);
+				Dense* d2 = new Dense(5, 5);
+				Dense* d3 = new Dense(5, 3);
 
 				d1 -> setActivationFunction(atan);
+				d2 -> setActivationFunction(atan);
 				d2 -> setActivationFunction(atan);
 
 				networks[i] -> addLayer(d1);
 				networks[i] -> addLayer(d2);
+				networks[i] -> addLayer(d3);
 			}
 		}
 
@@ -117,7 +120,7 @@ int main(int argsn, char** args){
 	gen_settings settings = {
 		population: POPULATION,
 		generations: GENERATIONS, //number of generations to run
-		mutations: 1, //number of mutations on each child
+		mutations: 5, //number of mutations on each child
 
 		rep_coef: 0.5, //percent of population to reproduce
 
@@ -195,6 +198,7 @@ void render(Arm a, Network* n){
 
 
 		sf::CircleShape target(0.05);
+		target.setOrigin(0.05, 0.05);
 		target.setFillColor(sf::Color(255, 0, 0));
 
 		target.setPosition(target_x, -target_y);

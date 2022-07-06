@@ -16,6 +16,9 @@ void load_population(Network ** networks, uint population, string folder);
 
 float evaluate(Arm* a, Network* n, float target_x, float target_y){
 
+		Arm b({1,1,1}, 20);
+		a = &b;
+
 		float delta = 1/60.0f;
 		float passed = 0;
 
@@ -48,12 +51,16 @@ float evaluate(Arm* a, Network* n, float target_x, float target_y){
 			passed += delta;
 		}
 
-	 	return abs(a -> getArmLocation().x - target_x) + abs(a -> getArmLocation().y - target_y) + motors_speed;
+		float x,y;
+		x = a -> getArmLocation().x - target_x;
+		y = a -> getArmLocation().y - target_y;
+
+	 	return x*x + y*y;
 }
 
 void evaluate(Network* n, float* score){
 
-	Arm a({1,1,1}, 5);
+	Arm a({1,1,1}, 20);
 
 	*score = 0;
 
@@ -76,6 +83,7 @@ int main(int argsn, char** args){
 
 	int POPULATION = 100;
 	int GENERATIONS = 100;
+	bool MULTITHREADING = false;
 
 	for(int i = 0; i < argsn; i++){
 		if(strcmp(args[i], "-load") == 0){
@@ -87,6 +95,8 @@ int main(int argsn, char** args){
 			POPULATION = atoi(args[i + 1]);
 		}else if(strcmp(args[i], "-generations") == 0){
 			GENERATIONS = atoi(args[i + 1]);
+		}else if(strcmp(args[i], "-multithreading") == 0){
+			MULTITHREADING = true;
 		}
 
 	}
@@ -100,16 +110,19 @@ int main(int argsn, char** args){
 
 			if(generation == 0){
 				Dense* d1 = new Dense(5, 5);
-				Dense* d2 = new Dense(5, 5);
-				Dense* d3 = new Dense(5, 3);
+				Dense* d2 = new Dense(5, 9);
+				Dense* d3 = new Dense(9, 5);
+				Dense* d4 = new Dense(5, 3);
 
 				d1 -> setActivationFunction(atan);
 				d2 -> setActivationFunction(atan);
-				d2 -> setActivationFunction(atan);
+				d3 -> setActivationFunction(atan);
+				d4 -> setActivationFunction(atan);
 
 				networks[i] -> addLayer(d1);
 				networks[i] -> addLayer(d2);
 				networks[i] -> addLayer(d3);
+				networks[i] -> addLayer(d4);
 			}
 		}
 
@@ -128,7 +141,7 @@ int main(int argsn, char** args){
 		max: 5, //maximum value for weights / biases
 
 		recompute_parents: false, //recompute parents (for non-deterministic evaluation functions)
-		multithreading: true,
+		multithreading: MULTITHREADING,
 
 		output: true,
 		start_generation: generation
@@ -157,8 +170,8 @@ void render(Arm a, Network* n){
 	view.zoom(0.03);
 	window.setView(view);
 
-	float target_x = 1;
-	float target_y = 1;
+	float target_x = -1;
+	float target_y = -1;
 
 	sf::Clock clock;
 	float passed = 0;
@@ -168,10 +181,10 @@ void render(Arm a, Network* n){
 
 		sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
 		sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
-		target_x = worldPos.x;
-		target_y = -worldPos.y;
+		//target_x = worldPos.x;
+		//target_y = -worldPos.y;
 
-		printf("%f %f\n", target_x, target_y);
+		//printf("%f %f\n", target_x, target_y);
 
 		window.clear(sf::Color::Black);
 

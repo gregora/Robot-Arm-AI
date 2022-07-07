@@ -136,7 +136,7 @@ int main(int argsn, char** args){
 
 	gen_settings settings = {
 		population: POPULATION,
-		generations: GENERATIONS, //number of generations to run
+		generations: 11, //number of generations to run
 		mutations: 5, //number of mutations on each child
 
 		rep_coef: 0.5, //percent of population to reproduce
@@ -152,8 +152,19 @@ int main(int argsn, char** args){
 	};
 
 	if(!display){
+		//save every 10 generations
+		for(int i = 10; i <= GENERATIONS; i+=10){
+			genetic(networks, evaluate, settings);
+			printf("\nSaving networks ...\n\n\n\n");
+			save_population(networks, POPULATION, "networks/" + to_string(generation + i)+"/");
+			settings.start_generation = settings.start_generation + 10;
+		}
+
+		settings.generations = (GENERATIONS % 10) + 1;
 		genetic(networks, evaluate, settings);
-		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS - 1)+"/");
+		printf("\nSaving networks ...\n\n\n\n");
+		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS)+"/");
+
 	}else{
 		Arm a({1,1,1}, 5);
 		render(a, networks[0]);

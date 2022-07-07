@@ -10,6 +10,10 @@ using namespace nnlib;
 #define TIME 7
 #define SAMPLES 20
 
+float linear(float x){
+	return x;
+}
+
 void render(Arm a, Network* n);
 void save_population(Network ** networks, uint population, string folder);
 void load_population(Network ** networks, uint population, string folder);
@@ -67,13 +71,13 @@ void evaluate(Network* n, float* score){
 	float x = 0;
 	float y = 0;
 
-	for(int i = 0; i < SAMPLES; i++){
-		x = (float) (134234*i % 4000 - 2000);
-		y = (float) (852343*i % 4000 - 2000);
+	for(int i = 1; i <= SAMPLES; i++){
+		x = (float) (134234*i % 4000 - 2000); //random x coordinate
+		y = (float) (852343*i % 4000 - 2000); //random y coordinate
 		*score += evaluate(&a, n, y / 1000, x / 1000);
 	}
 
-	*score = *score / 5;
+	*score = *score / SAMPLES;
 }
 
 int main(int argsn, char** args){
@@ -109,15 +113,15 @@ int main(int argsn, char** args){
 			networks[i] = new Network();
 
 			if(generation == 0){
-				Dense* d1 = new Dense(5, 5);
-				Dense* d2 = new Dense(5, 9);
-				Dense* d3 = new Dense(9, 5);
-				Dense* d4 = new Dense(5, 3);
+				Dense* d1 = new Dense(5, 20);
+				Dense* d2 = new Dense(20, 30);
+				Dense* d3 = new Dense(30, 20);
+				Dense* d4 = new Dense(20, 3);
 
 				d1 -> setActivationFunction(atan);
 				d2 -> setActivationFunction(atan);
 				d3 -> setActivationFunction(atan);
-				d4 -> setActivationFunction(atan);
+				d4 -> setActivationFunction(linear);
 
 				networks[i] -> addLayer(d1);
 				networks[i] -> addLayer(d2);
@@ -170,8 +174,8 @@ void render(Arm a, Network* n){
 	view.zoom(0.03);
 	window.setView(view);
 
-	float target_x = -1;
-	float target_y = -1;
+	float target_x = 0.234;
+	float target_y = -1.67;
 
 	sf::Clock clock;
 	float passed = 0;

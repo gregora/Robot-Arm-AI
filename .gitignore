@@ -4,7 +4,7 @@
 # Compiled Object files
 *.slo
 *.lo
-/*.o
+*.o
 *.obj
 
 # Precompiled Headers
@@ -21,10 +21,10 @@
 *.smod
 
 # Compiled Static libraries
-/*.lai
-/*.la
-/*.a
-/*.lib
+*.lai
+*.la
+*.a
+*.lib
 
 # Executables
 *.exe

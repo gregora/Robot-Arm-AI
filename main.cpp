@@ -115,18 +115,24 @@ int main(int argsn, char** args){
 			if(generation == 0){
 				Dense* d1 = new Dense(5, 20);
 				Dense* d2 = new Dense(20, 30);
-				Dense* d3 = new Dense(30, 20);
-				Dense* d4 = new Dense(20, 3);
+				Dense* d3 = new Dense(30, 100);
+				Dense* d4 = new Dense(100, 30);
+				Dense* d5 = new Dense(30, 20);
+				Dense* d6 = new Dense(20, 3);
 
 				d1 -> setActivationFunction(atan);
 				d2 -> setActivationFunction(atan);
 				d3 -> setActivationFunction(atan);
-				d4 -> setActivationFunction(linear);
+				d4 -> setActivationFunction(atan);
+				d5 -> setActivationFunction(atan);
+				d6 -> setActivationFunction(linear);
 
 				networks[i] -> addLayer(d1);
 				networks[i] -> addLayer(d2);
 				networks[i] -> addLayer(d3);
 				networks[i] -> addLayer(d4);
+				networks[i] -> addLayer(d5);
+				networks[i] -> addLayer(d6);
 			}
 		}
 

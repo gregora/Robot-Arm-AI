@@ -43,9 +43,9 @@ float evaluate(Arm* a, Network* n, float target_x, float target_y){
 			Matrix output = n -> eval(&input);
 
 			vector<float> speeds = {0,0,0};
-			speeds[0] = output.getValue(0, 0);
-			speeds[1] = output.getValue(0, 1);
-			speeds[2] = output.getValue(0, 2);
+			speeds[0] = 1 - output.getValue(0, 0);
+			speeds[1] = 1 - output.getValue(0, 1);
+			speeds[2] = 1 - output.getValue(0, 2);
 
 			motors_speed = abs(speeds[0]) + abs(speeds[1]) + abs(speeds[2]);
 
@@ -59,7 +59,7 @@ float evaluate(Arm* a, Network* n, float target_x, float target_y){
 		x = a -> getArmLocation().x - target_x;
 		y = a -> getArmLocation().y - target_y;
 
-	 	return x*x + y*y;
+	 	return x*x + y*y + motors_speed;
 }
 
 void evaluate(Network* n, float* score){
@@ -202,8 +202,12 @@ void render(Arm a, Network* n){
 
 		sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
 		sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
-		//target_x = worldPos.x;
-		//target_y = -worldPos.y;
+
+		if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+			target_x = worldPos.x;
+			target_y = -worldPos.y;
+		}
+
 
 		//printf("%f %f\n", target_x, target_y);
 
@@ -223,13 +227,18 @@ void render(Arm a, Network* n){
 		Matrix output = n -> eval(&input);
 
 		vector<float> speeds = {0,0,0};
-		speeds[0] = output.getValue(0, 0);
-		speeds[1] = output.getValue(0, 1);
-		speeds[2] = output.getValue(0, 2);
+		speeds[0] = 1 - output.getValue(0, 0);
+		speeds[1] = 1 - output.getValue(0, 1);
+		speeds[2] = 1 - output.getValue(0, 2);
+
+		if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
+			speeds[0] = -5*(angles[0]);
+			speeds[1] = -5*(angles[1]);
+			speeds[2] = -5*(angles[2]);
+		}
 
 		a.applySpeeds(speeds);
 		a.physics(delta.asSeconds());
-
 
 		sf::CircleShape target(0.05);
 		target.setOrigin(0.05, 0.05);

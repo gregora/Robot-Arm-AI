@@ -10,10 +10,6 @@ using namespace nnlib;
 #define TIME 7
 #define SAMPLES 20
 
-float linear(float x){
-	return x;
-}
-
 void render(Arm a, Network* n);
 void save_population(Network ** networks, uint population, string folder);
 void load_population(Network ** networks, uint population, string folder);
@@ -147,8 +143,7 @@ int main(int argsn, char** args){
 
 		rep_coef: 0.5, //percent of population to reproduce
 
-		min: -5, //minimum value for weights / biases
-		max: 5, //maximum value for weights / biases
+		delta: 0.2,
 
 		recompute_parents: false, //recompute parents (for non-deterministic evaluation functions)
 		multithreading: MULTITHREADING,

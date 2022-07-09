@@ -116,12 +116,12 @@ int main(int argsn, char** args){
 				Dense* d5 = new Dense(30, 20);
 				Dense* d6 = new Dense(20, 3);
 
-				d1 -> setActivationFunction(atan);
-				d2 -> setActivationFunction(atan);
-				d3 -> setActivationFunction(atan);
-				d4 -> setActivationFunction(atan);
-				d5 -> setActivationFunction(atan);
-				d6 -> setActivationFunction(linear);
+				d1 -> setActivationFunction("atan");
+				d2 -> setActivationFunction("atan");
+				d3 -> setActivationFunction("atan");
+				d4 -> setActivationFunction("atan");
+				d5 -> setActivationFunction("atan");
+				d6 -> setActivationFunction("linear");
 
 				networks[i] -> addLayer(d1);
 				networks[i] -> addLayer(d2);

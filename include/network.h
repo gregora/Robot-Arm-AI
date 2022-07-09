@@ -43,7 +43,7 @@ namespace nnlib {
 
 		Layer* clone();
 
-		void setActivationFunction(float (*newActivationFunction)(float));
+		void setActivationFunction(std::string name);
 
 		void randomize(float min, float max);
 		void mutate(float delta);
@@ -59,8 +59,8 @@ namespace nnlib {
 		Matrix* biases;
 
 	private:
-		float (*activationFunction)(float) = &relu;
-
+		float (*activationFunction)(float) = &fast_sigmoid;
+		std::string activationFunctionName = "fast_sigmoid";
 	};
 
 

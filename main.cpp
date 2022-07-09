@@ -141,7 +141,7 @@ int main(int argsn, char** args){
 		generations: 11, //number of generations to run
 		mutations: 5, //number of mutations on each child
 
-		rep_coef: 0.5, //percent of population to reproduce
+		rep_coef: 0.1, //percent of population to reproduce
 
 		delta: 0.2,
 

@@ -10,14 +10,13 @@ using namespace nnlib;
 #define TIME 7
 #define SAMPLES 20
 
-void render(Arm a, Network* n);
+void render(Network* n);
 void save_population(Network ** networks, uint population, string folder);
 void load_population(Network ** networks, uint population, string folder);
 
-float evaluate(Arm* a, Network* n, float target_x, float target_y){
+float evaluate(Network* n, float target_x, float target_y){
 
-		Arm b({1,1,1}, 20);
-		a = &b;
+		Arm a({1,1,1}, 20);
 
 		float delta = 1/60.0f;
 		float passed = 0;
@@ -27,14 +26,15 @@ float evaluate(Arm* a, Network* n, float target_x, float target_y){
 		while(passed <= TIME){
 
 			float angles[3];
-			a -> getAngles(angles);
+			a.getAngles(angles);
 
-			Matrix input(1, 5);
+			Matrix input(1, 6);
 			input.setValue(0, 0, angles[0]);
 			input.setValue(0, 1, angles[1]);
 			input.setValue(0, 2, angles[2]);
 			input.setValue(0, 3, target_x);
 			input.setValue(0, 4, target_y);
+			input.setValue(0, 5, passed);
 
 			Matrix output = n -> eval(&input);
 
@@ -45,22 +45,20 @@ float evaluate(Arm* a, Network* n, float target_x, float target_y){
 
 			motors_speed = abs(speeds[0]) + abs(speeds[1]) + abs(speeds[2]);
 
-			a -> applySpeeds(speeds);
-			a -> physics(delta);
+			a.applySpeeds(speeds);
+			a.physics(delta);
 
 			passed += delta;
 		}
 
 		float x,y;
-		x = a -> getArmLocation().x - target_x;
-		y = a -> getArmLocation().y - target_y;
+		x = a.getArmLocation().x - target_x;
+		y = a.getArmLocation().y - target_y;
 
 	 	return x*x + y*y + motors_speed;
 }
 
 void evaluate(Network* n, float* score){
-
-	Arm a({1,1,1}, 20);
 
 	*score = 0;
 
@@ -70,7 +68,7 @@ void evaluate(Network* n, float* score){
 	for(int i = 1; i <= SAMPLES; i++){
 		x = (float) (134234*i % 4000 - 2000); //random x coordinate
 		y = (float) (852343*i % 4000 - 2000); //random y coordinate
-		*score += evaluate(&a, n, y / 1000, x / 1000);
+		*score += evaluate(n, x / 1000, y / 1000);
 	}
 
 	*score = *score / SAMPLES;
@@ -109,7 +107,7 @@ int main(int argsn, char** args){
 			networks[i] = new Network();
 
 			if(generation == 0){
-				Dense* d1 = new Dense(5, 20);
+				Dense* d1 = new Dense(6, 20);
 				Dense* d2 = new Dense(20, 30);
 				Dense* d3 = new Dense(30, 100);
 				Dense* d4 = new Dense(100, 30);
@@ -167,15 +165,16 @@ int main(int argsn, char** args){
 		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS)+"/");
 
 	}else{
-		Arm a({1,1,1}, 5);
-		render(a, networks[0]);
+		render(networks[0]);
 	}
 
 
 }
 
 
-void render(Arm a, Network* n){
+void render(Network* n){
+
+	Arm a({1,1,1}, 5);
 
 	int WIDTH = 800;
 	int HEIGHT = 600;
@@ -212,12 +211,13 @@ void render(Arm a, Network* n){
 		float angles[3];
 		a.getAngles(angles);
 
-		Matrix input(1, 5);
+		Matrix input(1, 6);
 		input.setValue(0, 0, angles[0]);
 		input.setValue(0, 1, angles[1]);
 		input.setValue(0, 2, angles[2]);
 		input.setValue(0, 3, target_x);
 		input.setValue(0, 4, target_y);
+		input.setValue(0, 5, passed);
 
 		Matrix output = n -> eval(&input);
 
@@ -230,6 +230,7 @@ void render(Arm a, Network* n){
 			speeds[0] = -5*(angles[0]);
 			speeds[1] = -5*(angles[1]);
 			speeds[2] = -5*(angles[2]);
+			passed = 0;
 		}
 
 		a.applySpeeds(speeds);

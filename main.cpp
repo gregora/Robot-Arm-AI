@@ -39,9 +39,9 @@ float evaluate(Network* n, float target_x, float target_y){
 			Matrix output = n -> eval(&input);
 
 			vector<float> speeds = {0,0,0};
-			speeds[0] = 1 - output.getValue(0, 0);
-			speeds[1] = 1 - output.getValue(0, 1);
-			speeds[2] = 1 - output.getValue(0, 2);
+			speeds[0] = output.getValue(0, 0);
+			speeds[1] = output.getValue(0, 1);
+			speeds[2] = output.getValue(0, 2);
 
 			motors_speed = abs(speeds[0]) + abs(speeds[1]) + abs(speeds[2]);
 
@@ -115,17 +115,17 @@ int main(int argsn, char** args){
 				Dense* d6 = new Dense(20, 3);
 
 				d1 -> setActivationFunction("atan");
-				d2 -> setActivationFunction("atan");
-				d3 -> setActivationFunction("atan");
-				d4 -> setActivationFunction("atan");
-				d5 -> setActivationFunction("atan");
+				//d2 -> setActivationFunction("atan");
+				//d3 -> setActivationFunction("atan");
+				//d4 -> setActivationFunction("atan");
+				//d5 -> setActivationFunction("atan");
 				d6 -> setActivationFunction("linear");
 
 				networks[i] -> addLayer(d1);
-				networks[i] -> addLayer(d2);
-				networks[i] -> addLayer(d3);
-				networks[i] -> addLayer(d4);
-				networks[i] -> addLayer(d5);
+				//networks[i] -> addLayer(d2);
+				//networks[i] -> addLayer(d3);
+				//networks[i] -> addLayer(d4);
+				//networks[i] -> addLayer(d5);
 				networks[i] -> addLayer(d6);
 			}
 		}
@@ -137,7 +137,7 @@ int main(int argsn, char** args){
 	gen_settings settings = {
 		population: POPULATION,
 		generations: 11, //number of generations to run
-		mutations: 5, //number of mutations on each child
+		mutations: 1, //number of mutations on each child
 
 		rep_coef: 0.1, //percent of population to reproduce
 
@@ -222,9 +222,9 @@ void render(Network* n){
 		Matrix output = n -> eval(&input);
 
 		vector<float> speeds = {0,0,0};
-		speeds[0] = 1 - output.getValue(0, 0);
-		speeds[1] = 1 - output.getValue(0, 1);
-		speeds[2] = 1 - output.getValue(0, 2);
+		speeds[0] = output.getValue(0, 0);
+		speeds[1] = output.getValue(0, 1);
+		speeds[2] = output.getValue(0, 2);
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
 			speeds[0] = -5*(angles[0]);

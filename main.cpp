@@ -121,6 +121,9 @@ int main(int argsn, char** args){
 				//d5 -> setActivationFunction("atan");
 				d6 -> setActivationFunction("linear");
 
+				d1 -> randomize(-1, 1);
+				d6 -> randomize(-1, 1);
+
 				networks[i] -> addLayer(d1);
 				//networks[i] -> addLayer(d2);
 				//networks[i] -> addLayer(d3);

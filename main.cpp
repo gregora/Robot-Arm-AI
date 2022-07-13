@@ -108,11 +108,14 @@ int main(int argsn, char** args){
 
 			if(generation == 0){
 				Dense* d1 = new Dense(6, 20);
-				Dense* d2 = new Dense(20, 30);
-				Dense* d3 = new Dense(30, 100);
-				Dense* d4 = new Dense(100, 30);
-				Dense* d5 = new Dense(30, 20);
+				//Dense* d2 = new Dense(20, 30);
+				//Dense* d3 = new Dense(30, 100);
+				//Dense* d4 = new Dense(100, 30);
+				//Dense* d5 = new Dense(30, 20);
 				Dense* d6 = new Dense(20, 3);
+
+				d1 -> randomize(-1, 1);
+				d6 -> randomize(-1, 1);
 
 				d1 -> setActivationFunction("atan");
 				//d2 -> setActivationFunction("atan");
@@ -137,7 +140,7 @@ int main(int argsn, char** args){
 	gen_settings settings = {
 		population: POPULATION,
 		generations: 11, //number of generations to run
-		mutations: 1, //number of mutations on each child
+		mutation_rate: 0.2, //number of mutations on each child
 
 		rep_coef: 0.1, //percent of population to reproduce
 
@@ -281,3 +284,11 @@ void load_population(Network ** networks, uint population, string folder){
 		networks[i] -> load(folder + to_string(i) + ".AI");
 	}
 }
+
+/*
+bool b2ContactFilter::ShouldCollide	(	b2Fixture * 	fixtureA,
+b2Fixture * 	fixtureB
+){
+	return false;
+}
+*/

@@ -203,8 +203,10 @@ void render(Network* n, bool record){
 		sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-			target_x = worldPos.x;
-			target_y = -worldPos.y;
+			if(window.hasFocus()){
+				target_x = worldPos.x;
+				target_y = -worldPos.y;
+			}
 		}
 
 

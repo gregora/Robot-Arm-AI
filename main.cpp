@@ -251,6 +251,17 @@ void render(Network* n, bool record){
 		a.applySpeeds(speeds);
 		a.physics(d);
 
+		sf::RectangleShape ground;
+		ground.setSize(sf::Vector2f(WIDTH, HEIGHT / 2));
+		ground.setFillColor(sf::Color(20, 20, 20));
+		ground.setPosition(-WIDTH/2, 3);
+
+		sf::RectangleShape pillar;
+		pillar.setOrigin(0.07, 1.5);
+		pillar.setSize(sf::Vector2f(0.14, 3));
+		pillar.setFillColor(sf::Color(40, 40, 40));
+		pillar.setPosition(0, 1.5);
+
 		sf::CircleShape target(0.05);
 		target.setOrigin(0.05, 0.05);
 		target.setFillColor(sf::Color(255, 0, 0));
@@ -275,8 +286,12 @@ void render(Network* n, bool record){
 		text.setPosition(10,10);
 
 
+		window.draw(ground);
+		window.draw(pillar);
+
 		window.draw(line);
 		window.draw(target);
+
 		window.draw(a);
 
 		window.setView(default_view);

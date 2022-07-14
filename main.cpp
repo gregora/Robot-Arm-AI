@@ -9,7 +9,7 @@ using namespace std;
 using namespace nnlib;
 
 #define TIME 7
-#define SAMPLES 20
+#define SAMPLES 100
 
 void render(Network* n, bool record = false);
 void save_population(Network ** networks, uint population, string folder);
@@ -29,13 +29,12 @@ float evaluate(Network* n, float target_x, float target_y){
 			float angles[3];
 			a.getAngles(angles);
 
-			Matrix input(1, 6);
+			Matrix input(1, 5);
 			input.setValue(0, 0, angles[0]);
 			input.setValue(0, 1, angles[1]);
 			input.setValue(0, 2, angles[2]);
 			input.setValue(0, 3, target_x);
 			input.setValue(0, 4, target_y);
-			input.setValue(0, 5, passed);
 
 			Matrix output = n -> eval(&input);
 
@@ -111,32 +110,17 @@ int main(int argsn, char** args){
 			networks[i] = new Network();
 
 			if(generation == 0){
-				Dense* d1 = new Dense(6, 20);
-				//Dense* d2 = new Dense(20, 30);
-				//Dense* d3 = new Dense(30, 100);
-				//Dense* d4 = new Dense(100, 30);
-				//Dense* d5 = new Dense(30, 20);
-				Dense* d6 = new Dense(20, 3);
+				Dense* d1 = new Dense(5, 20);
+				Dense* d2 = new Dense(20, 3);
 
 				d1 -> randomize(-1, 1);
-				d6 -> randomize(-1, 1);
+				d2 -> randomize(-1, 1);
 
 				d1 -> setActivationFunction("atan");
-				//d2 -> setActivationFunction("atan");
-				//d3 -> setActivationFunction("atan");
-				//d4 -> setActivationFunction("atan");
-				//d5 -> setActivationFunction("atan");
-				d6 -> setActivationFunction("linear");
-
-				d1 -> randomize(-1, 1);
-				d6 -> randomize(-1, 1);
+				d2 -> setActivationFunction("linear");
 
 				networks[i] -> addLayer(d1);
-				//networks[i] -> addLayer(d2);
-				//networks[i] -> addLayer(d3);
-				//networks[i] -> addLayer(d4);
-				//networks[i] -> addLayer(d5);
-				networks[i] -> addLayer(d6);
+				networks[i] -> addLayer(d2);
 			}
 		}
 
@@ -188,11 +172,20 @@ void render(Network* n, bool record){
 
 	int WIDTH = 800;
 	int HEIGHT = 600;
+	float zoom = 0.03;
 
+
+	if(record){
+		WIDTH = 1920;
+		HEIGHT = 1080;
+		zoom = 0.02;
+	}
 
 	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Arm");
 	sf::View view(sf::Vector2f(0, 0), sf::Vector2f(WIDTH / 2, HEIGHT / 2));
-	view.zoom(0.03);
+	sf::View default_view = window.getView();
+
+	view.zoom(zoom);
 	window.setView(view);
 
 	float target_x = 0.234;
@@ -223,23 +216,22 @@ void render(Network* n, bool record){
 		float angles[3];
 		a.getAngles(angles);
 
-		Matrix input(1, 6);
+		Matrix input(1, 5);
 		input.setValue(0, 0, angles[0]);
 		input.setValue(0, 1, angles[1]);
 		input.setValue(0, 2, angles[2]);
 		input.setValue(0, 3, target_x);
 		input.setValue(0, 4, target_y);
-		input.setValue(0, 5, passed);
 
 		Matrix output = n -> eval(&input);
 
 		vector<float> speeds = {0,0,0};
 
-		if(passed <= TIME){
+		//if(passed <= TIME){
 			speeds[0] = output.getValue(0, 0);
 			speeds[1] = output.getValue(0, 1);
 			speeds[2] = output.getValue(0, 2);
-		}
+		//}
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
 			speeds[0] = -5*(angles[0]);
@@ -266,11 +258,34 @@ void render(Network* n, bool record){
 		window.draw(target);
 		window.draw(a);
 
+		sf::Text text;
+		sf::Font font;
+		font.loadFromFile("fonts/Prototype.ttf");
+		text.setFont(font);
+		char str[40];
+		sprintf(str, "Distance: %4.2f", (b2Vec2(target_x, target_y) - a.getArmLocation()).Length());
+		text.setString(str);
+		text.setCharacterSize(24);
+		text.setFillColor(sf::Color::White);
+		text.setPosition(10,10);
+		window.setView(default_view);
+		window.draw(text);
+		window.setView(view);
+
 		// end the current frame
 		window.display();
 
 		if(record){
 			window.capture().saveToFile("render/" + to_string(frame) + ".png");
+
+			if(record){
+				system("cd render/ && ./render.sh");
+			}
+
+			if(passed >= TIME + 1){
+				window.close();
+				return;
+			}
 		}
 
 		passed+=d;
@@ -280,10 +295,6 @@ void render(Network* n, bool record){
 		{
 			if (event.type == sf::Event::Closed){
 				window.close();
-
-				if(record){
-					system("cd render/ && ./render.sh");
-				}
 
 				return;
 			}

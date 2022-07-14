@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <sys/stat.h>
+#include <stdlib.h>
 
 using namespace std;
 using namespace nnlib;
@@ -10,7 +11,7 @@ using namespace nnlib;
 #define TIME 7
 #define SAMPLES 20
 
-void render(Network* n);
+void render(Network* n, bool record = false);
 void save_population(Network ** networks, uint population, string folder);
 void load_population(Network ** networks, uint population, string folder);
 
@@ -82,6 +83,7 @@ int main(int argsn, char** args){
 	int POPULATION = 100;
 	int GENERATIONS = 100;
 	bool MULTITHREADING = false;
+	bool RENDER = false;
 
 	for(int i = 0; i < argsn; i++){
 		if(strcmp(args[i], "-load") == 0){
@@ -95,6 +97,8 @@ int main(int argsn, char** args){
 			GENERATIONS = atoi(args[i + 1]);
 		}else if(strcmp(args[i], "-multithreading") == 0){
 			MULTITHREADING = true;
+		}else if(strcmp(args[i], "-render") == 0){
+			RENDER = true;
 		}
 
 	}
@@ -168,14 +172,14 @@ int main(int argsn, char** args){
 		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS)+"/");
 
 	}else{
-		render(networks[0]);
+		render(networks[0], RENDER);
 	}
 
 
 }
 
 
-void render(Network* n){
+void render(Network* n, bool record){
 
 	Arm a({1,1,1}, 5);
 
@@ -191,11 +195,13 @@ void render(Network* n){
 	float target_x = 0.234;
 	float target_y = -1.67;
 
+	uint frame = 0;
+
 	sf::Clock clock;
 	float passed = 0;
 	while (window.isOpen())
 	{
-
+		frame++;
 
 		sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
 		sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
@@ -225,9 +231,12 @@ void render(Network* n){
 		Matrix output = n -> eval(&input);
 
 		vector<float> speeds = {0,0,0};
-		speeds[0] = output.getValue(0, 0);
-		speeds[1] = output.getValue(0, 1);
-		speeds[2] = output.getValue(0, 2);
+
+		if(passed <= TIME){
+			speeds[0] = output.getValue(0, 0);
+			speeds[1] = output.getValue(0, 1);
+			speeds[2] = output.getValue(0, 2);
+		}
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
 			speeds[0] = -5*(angles[0]);
@@ -236,8 +245,14 @@ void render(Network* n){
 			passed = 0;
 		}
 
+		float d = delta.asSeconds();
+
+		if(record){
+			d = 1.0f/60;
+		}
+
 		a.applySpeeds(speeds);
-		a.physics(delta.asSeconds());
+		a.physics(d);
 
 		sf::CircleShape target(0.05);
 		target.setOrigin(0.05, 0.05);
@@ -251,14 +266,22 @@ void render(Network* n){
 		// end the current frame
 		window.display();
 
+		if(record){
+			window.capture().saveToFile("render/" + to_string(frame) + ".png");
+		}
 
-		passed+=delta.asSeconds();
+		passed+=d;
 
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed){
 				window.close();
+
+				if(record){
+					system("cd render/ && ./render.sh");
+				}
+
 				return;
 			}
 		}

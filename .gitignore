@@ -31,5 +31,9 @@
 *.out
 *.app
 
-#Saved networks
+# Saved networks
 networks/*
+
+# Videos and frames
+render/*.png
+render/*.mp4

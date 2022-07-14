@@ -11,6 +11,8 @@ using namespace nnlib;
 #define TIME 7
 #define SAMPLES 100
 
+float vector2angle(float x, float y);
+
 void render(Network* n, bool record = false);
 void save_population(Network ** networks, uint population, string folder);
 void load_population(Network ** networks, uint population, string folder);
@@ -198,6 +200,7 @@ void render(Network* n, bool record){
 	while (window.isOpen())
 	{
 		frame++;
+		float dist = (b2Vec2(target_x, target_y) - a.getArmLocation()).Length();
 
 		sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
 		sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
@@ -208,9 +211,6 @@ void render(Network* n, bool record){
 				target_y = -worldPos.y;
 			}
 		}
-
-
-		//printf("%f %f\n", target_x, target_y);
 
 		window.clear(sf::Color::Black);
 
@@ -229,17 +229,17 @@ void render(Network* n, bool record){
 
 		vector<float> speeds = {0,0,0};
 
-		//if(passed <= TIME){
-			speeds[0] = output.getValue(0, 0);
-			speeds[1] = output.getValue(0, 1);
-			speeds[2] = output.getValue(0, 2);
-		//}
+		speeds[0] = output.getValue(0, 0);
+		speeds[1] = output.getValue(0, 1);
+		speeds[2] = output.getValue(0, 2);
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
-			speeds[0] = -5*(angles[0]);
-			speeds[1] = -5*(angles[1]);
-			speeds[2] = -5*(angles[2]);
-			passed = 0;
+			if(window.hasFocus()){
+				speeds[0] = -5*(angles[0]);
+				speeds[1] = -5*(angles[1]);
+				speeds[2] = -5*(angles[2]);
+				passed = 0;
+			}
 		}
 
 		float d = delta.asSeconds();
@@ -257,19 +257,28 @@ void render(Network* n, bool record){
 
 		target.setPosition(target_x, -target_y);
 
-		window.draw(target);
-		window.draw(a);
+		sf::RectangleShape line;
+		line.setFillColor(sf::Color(50, 0, 0));
+		line.setSize(sf::Vector2f(0.02, dist));
+		line.setPosition(a.getArmLocation().x, -a.getArmLocation().y);
+		line.setRotation(-90 + 180.0f/3.145f * vector2angle(target_x - a.getArmLocation().x, -target_y + a.getArmLocation().y));
 
 		sf::Text text;
 		sf::Font font;
 		font.loadFromFile("fonts/Prototype.ttf");
 		text.setFont(font);
 		char str[40];
-		sprintf(str, "Distance: %4.2f", (b2Vec2(target_x, target_y) - a.getArmLocation()).Length());
+		sprintf(str, "Distance: %4.2f m", dist);
 		text.setString(str);
 		text.setCharacterSize(24);
 		text.setFillColor(sf::Color::White);
 		text.setPosition(10,10);
+
+
+		window.draw(line);
+		window.draw(target);
+		window.draw(a);
+
 		window.setView(default_view);
 		window.draw(text);
 		window.setView(view);
@@ -321,6 +330,19 @@ void load_population(Network ** networks, uint population, string folder){
 	for(uint i = 0; i < population; i++){
 		networks[i] = new Network;
 		networks[i] -> load(folder + to_string(i) + ".AI");
+	}
+}
+
+float vector2angle(float x, float y){
+
+	float pi = 3.14159265359;
+
+	float veclen = sqrt(pow(x, 2) + pow(y, 2));
+
+	if(y > 0){
+		return acos(x / veclen);
+	}else{
+		return 2*pi - acos(x / veclen);
 	}
 }
 

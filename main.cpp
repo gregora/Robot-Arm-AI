@@ -1,5 +1,6 @@
 #include "include/algorithms.h"
 #include "include/arm.h"
+#include "include/gauge.h"
 #include <stdio.h>
 #include <iostream>
 #include <sys/stat.h>
@@ -8,8 +9,8 @@
 using namespace std;
 using namespace nnlib;
 
-#define TIME 7
 #define SAMPLES 100
+#define TIME 7
 
 void render(Network* n, bool record = false);
 void save_population(Network ** networks, uint population, string folder);
@@ -284,6 +285,21 @@ void render(Network* n, bool record){
 		text.setFillColor(sf::Color::White);
 		text.setPosition(10,10);
 
+		Gauge gauge1("Motor 1", -5, 5);
+		gauge1.unit = "rad/s";
+		gauge1.setPosition(20, 100);
+		gauge1.setValue(speeds[0]);
+
+		Gauge gauge2("Motor 1", -5, 5);
+		gauge2.unit = "rad/s";
+		gauge2.setPosition(20, 200);
+		gauge2.setValue(speeds[1]);
+
+		Gauge gauge3("Motor 1", -5, 5);
+		gauge3.unit = "rad/s";
+		gauge3.setPosition(20, 300);
+		gauge3.setValue(speeds[2]);
+
 
 		//tower
 		pillar.setRotation(10);
@@ -311,6 +327,10 @@ void render(Network* n, bool record){
 
 		window.setView(default_view);
 		window.draw(text);
+
+		window.draw(gauge1);
+		window.draw(gauge2);
+		window.draw(gauge3);
 		window.setView(view);
 
 		// end the current frame
@@ -320,11 +340,11 @@ void render(Network* n, bool record){
 			window.capture().saveToFile("render/" + to_string(frame) + ".png");
 
 
-			if(passed >= TIME + 1){
+			/*if(passed >= TIME + 1){
 				window.close();
 				system("cd render/ && ./render.sh");
 				return;
-			}
+			}*/
 		}
 
 		passed+=d;
@@ -334,6 +354,11 @@ void render(Network* n, bool record){
 		{
 			if (event.type == sf::Event::Closed){
 				window.close();
+
+				if(record){
+					system("cd render/ && ./render.sh");
+					return;
+				}
 
 				return;
 			}

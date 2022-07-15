@@ -261,10 +261,12 @@ void render(Network* n, bool record){
 		pillar.setSize(sf::Vector2f(0.14, 5));
 		pillar.setFillColor(sf::Color(25, 25, 25));
 
-		sf::CircleShape target(0.05);
-		target.setOrigin(0.05, 0.05);
-		target.setFillColor(sf::Color(255, 0, 0));
 
+		sf::Texture target_texture;
+		target_texture.loadFromFile("textures/target.png");
+		sf::Sprite target(target_texture);
+		target.setOrigin(10, 10);
+		target.setScale(sf::Vector2f(0.01, 0.01));
 		target.setPosition(target_x, -target_y);
 
 		sf::RectangleShape line;

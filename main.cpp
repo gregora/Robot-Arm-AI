@@ -172,6 +172,8 @@ void render(Network** n, int population, bool record, float max_time, string tit
 
 	Arm* a[population];
 
+	float points[][2] = {{1, -0.34}, {-0.13, -1.4}, {-1.7, 0.43}};
+
 	for(int i = 0; i < population; i++){
 		a[i] = new Arm({1,1,1}, 5);
 		if(i != 0){
@@ -197,14 +199,17 @@ void render(Network** n, int population, bool record, float max_time, string tit
 	view.zoom(zoom);
 	window.setView(view);
 
-	float target_x = nnlib::random()*4 - 2;
-	float target_y = nnlib::random()*4 - 2;
+	float target_x = points[0][0];
+	float target_y = points[0][1];
 
 	uint frame = 0;
 
 	sf::Clock clock;
 	float passed = 0;
 	float real_time = 0;
+
+
+	int p = 0;
 
 	while (window.isOpen())
 	{
@@ -389,8 +394,9 @@ void render(Network** n, int population, bool record, float max_time, string tit
 
 			if(passed >= TIME + 1){
 				passed = 0;
-				target_x = nnlib::random()*4 - 2;
-				target_y = nnlib::random()*4 - 2;
+				p++;
+				target_x = points[p][0];
+				target_y = points[p][1];
 			}
 
 		}

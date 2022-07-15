@@ -190,8 +190,8 @@ void render(Network* n, bool record){
 	view.zoom(zoom);
 	window.setView(view);
 
-	float target_x = 0.234;
-	float target_y = -1.67;
+	float target_x = nnlib::random()*4 - 2;
+	float target_y = nnlib::random()*4 - 2;
 
 	uint frame = 0;
 
@@ -253,14 +253,13 @@ void render(Network* n, bool record){
 
 		sf::RectangleShape ground;
 		ground.setSize(sf::Vector2f(WIDTH, HEIGHT / 2));
-		ground.setFillColor(sf::Color(20, 20, 20));
+		ground.setFillColor(sf::Color(15, 15, 15));
 		ground.setPosition(-WIDTH/2, 3);
 
 		sf::RectangleShape pillar;
 		pillar.setOrigin(0.07, 1.5);
-		pillar.setSize(sf::Vector2f(0.14, 3));
-		pillar.setFillColor(sf::Color(40, 40, 40));
-		pillar.setPosition(0, 1.5);
+		pillar.setSize(sf::Vector2f(0.14, 5));
+		pillar.setFillColor(sf::Color(25, 25, 25));
 
 		sf::CircleShape target(0.05);
 		target.setOrigin(0.05, 0.05);
@@ -286,8 +285,24 @@ void render(Network* n, bool record){
 		text.setPosition(10,10);
 
 
-		window.draw(ground);
+		//tower
+		pillar.setRotation(10);
+		pillar.setPosition(-0.3, 1.5);
 		window.draw(pillar);
+		pillar.setRotation(-10);
+		pillar.setPosition(0.3, 1.5);
+		window.draw(pillar);
+
+
+		pillar.setRotation(25);
+		pillar.setPosition(-0.35, 2.7);
+		window.draw(pillar);
+		pillar.setRotation(-25);
+		pillar.setPosition(0.35, 2.7);
+		window.draw(pillar);
+
+		window.draw(ground);
+
 
 		window.draw(line);
 		window.draw(target);
@@ -304,12 +319,10 @@ void render(Network* n, bool record){
 		if(record){
 			window.capture().saveToFile("render/" + to_string(frame) + ".png");
 
-			if(record){
-				system("cd render/ && ./render.sh");
-			}
 
 			if(passed >= TIME + 1){
 				window.close();
+				system("cd render/ && ./render.sh");
 				return;
 			}
 		}

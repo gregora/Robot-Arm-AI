@@ -11,8 +11,6 @@ using namespace nnlib;
 #define TIME 7
 #define SAMPLES 100
 
-float vector2angle(float x, float y);
-
 void render(Network* n, bool record = false);
 void save_population(Network ** networks, uint population, string folder);
 void load_population(Network ** networks, uint population, string folder);
@@ -363,23 +361,9 @@ void load_population(Network ** networks, uint population, string folder){
 	}
 }
 
-float vector2angle(float x, float y){
 
-	float pi = 3.14159265359;
-
-	float veclen = sqrt(pow(x, 2) + pow(y, 2));
-
-	if(y > 0){
-		return acos(x / veclen);
-	}else{
-		return 2*pi - acos(x / veclen);
-	}
-}
-
-/*
 bool b2ContactFilter::ShouldCollide	(	b2Fixture * 	fixtureA,
 b2Fixture * 	fixtureB
 ){
 	return false;
 }
-*/

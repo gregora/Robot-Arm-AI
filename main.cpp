@@ -340,11 +340,11 @@ void render(Network* n, bool record){
 			window.capture().saveToFile("render/" + to_string(frame) + ".png");
 
 
-			/*if(passed >= TIME + 1){
-				window.close();
-				system("cd render/ && ./render.sh");
-				return;
-			}*/
+			if(passed >= TIME + 1){
+				passed = 0;
+				target_x = nnlib::random()*4 - 2;
+				target_y = nnlib::random()*4 - 2;
+			}
 		}
 
 		passed+=d;

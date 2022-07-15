@@ -11,6 +11,7 @@ using namespace nnlib;
 
 #define SAMPLES 100
 #define TIME 7
+#define SAVE_PERIOD 10
 
 void render(Network** n, int population, bool record = false, float max_time = 0, string title = "");
 void save_population(Network ** networks, uint population, string folder);
@@ -131,7 +132,7 @@ int main(int argsn, char** args){
 
 	gen_settings settings = {
 		population: POPULATION,
-		generations: 11, //number of generations to run
+		generations: SAVE_PERIOD + 1, //number of generations to run
 		mutation_rate: 0.2, //number of mutations on each child
 
 		rep_coef: 0.1, //percent of population to reproduce
@@ -146,21 +147,21 @@ int main(int argsn, char** args){
 	};
 
 	if(!display){
-		//save every 10 generations
-		for(int i = 10; i <= GENERATIONS; i+=10){
+		//save every SAVE_PERIOD generations
+		for(int i = SAVE_PERIOD; i <= GENERATIONS; i+=SAVE_PERIOD){
 			genetic(networks, evaluate, settings);
 			printf("\nSaving networks ...\n\n\n\n");
 			save_population(networks, POPULATION, "networks/" + to_string(generation + i)+"/");
-			settings.start_generation = settings.start_generation + 10;
+			settings.start_generation = settings.start_generation + SAVE_PERIOD;
 		}
 
-		settings.generations = (GENERATIONS % 10) + 1;
+		settings.generations = (GENERATIONS % SAVE_PERIOD) + 1;
 		genetic(networks, evaluate, settings);
 		printf("\nSaving networks ...\n\n\n\n");
 		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS)+"/");
 
 	}else{
-		render(networks, POPULATION, RENDER, 32, "GENERATION " + to_string(generation));
+		render(networks, POPULATION, RENDER, 24, "GENERATION " + to_string(generation));
 	}
 
 
@@ -174,7 +175,7 @@ void render(Network** n, int population, bool record, float max_time, string tit
 	for(int i = 0; i < population; i++){
 		a[i] = new Arm({1,1,1}, 5);
 		if(i != 0){
-			a[i] -> opacity = 20;
+			a[i] -> opacity = 50;
 		}
 	}
 
@@ -203,6 +204,8 @@ void render(Network** n, int population, bool record, float max_time, string tit
 
 	sf::Clock clock;
 	float passed = 0;
+	float real_time = 0;
+
 	while (window.isOpen())
 	{
 		frame++;
@@ -291,31 +294,50 @@ void render(Network** n, int population, bool record, float max_time, string tit
 		char str[40];
 		sprintf(str, "Distance: %4.2f m", dist);
 		text.setString(str);
-		text.setCharacterSize(24);
+		text.setCharacterSize(30);
 		text.setFillColor(sf::Color::White);
-		text.setPosition(10,10);
+		text.setPosition(20,20);
 
 		sf::Text title_text;
 		title_text.setFont(font);
 		title_text.setString(title);
-		title_text.setCharacterSize(30);
+		title_text.setCharacterSize(40);
 		title_text.setFillColor(sf::Color::White);
-		title_text.setPosition(WIDTH - title_text.getLocalBounds().width - 10, 10);
+		title_text.setPosition(WIDTH - title_text.getLocalBounds().width - 40, 20);
 
 		Gauge gauge1("Motor 1", -150, 150);
 		gauge1.unit = "deg/s";
-		gauge1.setPosition(20, 100);
 		gauge1.value = speeds[0]*RAD2DEG;
 
 		Gauge gauge2("Motor 2", -150, 150);
 		gauge2.unit = "deg/s";
-		gauge2.setPosition(20, 200);
 		gauge2.value = speeds[1]*RAD2DEG;
 
 		Gauge gauge3("Motor 3", -150, 150);
 		gauge3.unit = "deg/s";
-		gauge3.setPosition(20, 300);
 		gauge3.value = speeds[2]*RAD2DEG;
+
+		if(!record){
+			gauge1.setPosition(20, 100);
+			gauge2.setPosition(20, 200);
+			gauge3.setPosition(20, 300);
+
+			gauge1.setScale(0.2f, 0.2f);
+			gauge2.setScale(0.2f, 0.2f);
+			gauge3.setScale(0.2f, 0.2f);
+
+			text.setCharacterSize(24);
+			title_text.setCharacterSize(30);
+
+		}else{
+			gauge1.setPosition(20, 100);
+			gauge2.setPosition(20, 300);
+			gauge3.setPosition(20, 500);
+
+			gauge1.setScale(0.4f, 0.4f);
+			gauge2.setScale(0.4f, 0.4f);
+			gauge3.setScale(0.4f, 0.4f);
+		}
 
 
 		//tower
@@ -359,7 +381,7 @@ void render(Network** n, int population, bool record, float max_time, string tit
 		if(record){
 			window.capture().saveToFile("render/" + to_string(frame) + ".png");
 
-			if(max_time != 0 && max_time <= passed){
+			if(max_time != 0 && max_time <= real_time){
 				window.close();
 				system("cd render/ && ./render.sh");
 				return;
@@ -374,6 +396,7 @@ void render(Network** n, int population, bool record, float max_time, string tit
 		}
 
 		passed+=d;
+		real_time+=d;
 
 		sf::Event event;
 		while (window.pollEvent(event))

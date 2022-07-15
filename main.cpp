@@ -12,7 +12,7 @@ using namespace nnlib;
 #define SAMPLES 100
 #define TIME 7
 
-void render(Network* n, bool record = false);
+void render(Network** n, int population, bool record = false, float max_time = 0, string title = "");
 void save_population(Network ** networks, uint population, string folder);
 void load_population(Network ** networks, uint population, string folder);
 
@@ -160,16 +160,23 @@ int main(int argsn, char** args){
 		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS)+"/");
 
 	}else{
-		render(networks[0], RENDER);
+		render(networks, POPULATION, RENDER, 32, "GENERATION " + to_string(generation));
 	}
 
 
 }
 
 
-void render(Network* n, bool record){
+void render(Network** n, int population, bool record, float max_time, string title){
 
-	Arm a({1,1,1}, 5);
+	Arm* a[population];
+
+	for(int i = 0; i < population; i++){
+		a[i] = new Arm({1,1,1}, 5);
+		if(i != 0){
+			a[i] -> opacity = 20;
+		}
+	}
 
 	int WIDTH = 800;
 	int HEIGHT = 600;
@@ -199,13 +206,13 @@ void render(Network* n, bool record){
 	while (window.isOpen())
 	{
 		frame++;
-		float dist = (b2Vec2(target_x, target_y) - a.getArmLocation()).Length();
+		float dist = (b2Vec2(target_x, target_y) - a[0] -> getArmLocation()).Length();
 
 		sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
 		sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-			if(window.hasFocus()){
+			if(window.hasFocus() && !record){
 				target_x = worldPos.x;
 				target_y = -worldPos.y;
 			}
@@ -214,26 +221,37 @@ void render(Network* n, bool record){
 		window.clear(sf::Color::Black);
 
 		sf::Time delta = clock.restart();
-		float angles[3];
-		a.getAngles(angles);
+		float d = delta.asSeconds();
 
-		Matrix input(1, 5);
-		input.setValue(0, 0, angles[0]);
-		input.setValue(0, 1, angles[1]);
-		input.setValue(0, 2, angles[2]);
-		input.setValue(0, 3, target_x);
-		input.setValue(0, 4, target_y);
-
-		Matrix output = n -> eval(&input);
+		if(record){
+			d = 1.0f/60;
+		}
 
 		vector<float> speeds = {0,0,0};
+		float angles[3];
 
-		speeds[0] = output.getValue(0, 0);
-		speeds[1] = output.getValue(0, 1);
-		speeds[2] = output.getValue(0, 2);
+		for(int i = population - 1; i >= 0; i--){
+
+			a[i] -> getAngles(angles);
+
+			Matrix input(1, 5);
+			input.setValue(0, 0, angles[0]);
+			input.setValue(0, 1, angles[1]);
+			input.setValue(0, 2, angles[2]);
+			input.setValue(0, 3, target_x);
+			input.setValue(0, 4, target_y);
+
+			Matrix output = n[i] -> eval(&input);
+			speeds[0] = output.getValue(0, 0);
+			speeds[1] = output.getValue(0, 1);
+			speeds[2] = output.getValue(0, 2);
+
+			a[i] -> applySpeeds(speeds);
+			a[i] -> physics(d);
+		}
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
-			if(window.hasFocus()){
+			if(window.hasFocus() && !record){
 				speeds[0] = -5*(angles[0]);
 				speeds[1] = -5*(angles[1]);
 				speeds[2] = -5*(angles[2]);
@@ -241,14 +259,6 @@ void render(Network* n, bool record){
 			}
 		}
 
-		float d = delta.asSeconds();
-
-		if(record){
-			d = 1.0f/60;
-		}
-
-		a.applySpeeds(speeds);
-		a.physics(d);
 
 		sf::RectangleShape ground;
 		ground.setSize(sf::Vector2f(WIDTH, HEIGHT / 2));
@@ -271,8 +281,8 @@ void render(Network* n, bool record){
 		sf::RectangleShape line;
 		line.setFillColor(sf::Color(50, 0, 0));
 		line.setSize(sf::Vector2f(0.02, dist));
-		line.setPosition(a.getArmLocation().x, -a.getArmLocation().y);
-		line.setRotation(-90 + 180.0f/3.145f * vector2angle(target_x - a.getArmLocation().x, -target_y + a.getArmLocation().y));
+		line.setPosition(a[0] -> getArmLocation().x, -a[0] -> getArmLocation().y);
+		line.setRotation(-90 + 180.0f/3.145f * vector2angle(target_x - a[0] -> getArmLocation().x, -target_y + a[0] -> getArmLocation().y));
 
 		sf::Text text;
 		sf::Font font;
@@ -284,6 +294,13 @@ void render(Network* n, bool record){
 		text.setCharacterSize(24);
 		text.setFillColor(sf::Color::White);
 		text.setPosition(10,10);
+
+		sf::Text title_text;
+		title_text.setFont(font);
+		title_text.setString(title);
+		title_text.setCharacterSize(30);
+		title_text.setFillColor(sf::Color::White);
+		title_text.setPosition(WIDTH - title_text.getLocalBounds().width - 10, 10);
 
 		Gauge gauge1("Motor 1", -150, 150);
 		gauge1.unit = "deg/s";
@@ -323,10 +340,13 @@ void render(Network* n, bool record){
 		window.draw(line);
 		window.draw(target);
 
-		window.draw(a);
+		for(int i = population - 1; i >= 0; i--){
+			window.draw(*a[i]);
+		}
 
 		window.setView(default_view);
 		window.draw(text);
+		window.draw(title_text);
 
 		window.draw(gauge1);
 		window.draw(gauge2);
@@ -339,12 +359,18 @@ void render(Network* n, bool record){
 		if(record){
 			window.capture().saveToFile("render/" + to_string(frame) + ".png");
 
+			if(max_time != 0 && max_time <= passed){
+				window.close();
+				system("cd render/ && ./render.sh");
+				return;
+			}
 
 			if(passed >= TIME + 1){
 				passed = 0;
 				target_x = nnlib::random()*4 - 2;
 				target_y = nnlib::random()*4 - 2;
 			}
+
 		}
 
 		passed+=d;

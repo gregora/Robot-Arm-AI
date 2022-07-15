@@ -11,18 +11,15 @@ public:
 	std::string unit = "";
 	float min = 0;
 	float max = 1;
-
-	void setValue(float value);
+	float value = 0.5;
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 
 private:
-	float value = 0.5;
 
 	sf::Sprite sprite;
 	sf::Texture texture;
 
 	sf::Font font;
-	sf::Text text;
 };

@@ -13,22 +13,11 @@ Gauge::Gauge(std::string name, float min, float max){
 		printf("WARNING: Gauge object could not load \"fonts/Prototype.ttf\"");
 	}
 
-	text.setFont(font);
-	text.setPosition(20, 70);
-	text.setFillColor(sf::Color(255, 255, 255));
-	text.setCharacterSize(12);
 
 
 }
 
 Gauge::~Gauge(){}
-
-void Gauge::setValue(float value){
-	char string[40];
-	this -> value = value;
-	sprintf(string, "%4.2f %s", value, unit.c_str());
-	text.setString(string);
-}
 
 void Gauge::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 
@@ -41,8 +30,28 @@ void Gauge::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	pointer.setRotation(angle);
 	pointer.setPosition(50, 50);
 
+	sf::Text text;
+	text.setFont(font);
+	text.setFillColor(sf::Color(255, 255, 255));
+	text.setCharacterSize(12);
+	char string[40];
+	sprintf(string, "%4.2f %s", value, unit.c_str());
+	text.setString(string);
+	float t_width = text.getLocalBounds().width;
+	text.setPosition((100 - t_width) / 2, 70);
+
+
+	sf::Text name_text;
+	name_text.setFont(font);
+	name_text.setFillColor(sf::Color(150, 150, 150));
+	name_text.setCharacterSize(9);
+	name_text.setString(name);
+	float nt_width = name_text.getLocalBounds().width;
+	name_text.setPosition((100 - nt_width) / 2, 60);
+
 	target.draw(sprite, states.transform*getTransform());
 	target.draw(pointer, states.transform*getTransform());
 	target.draw(text, states.transform*getTransform());
+	target.draw(name_text, states.transform*getTransform());
 
 }

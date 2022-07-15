@@ -285,20 +285,20 @@ void render(Network* n, bool record){
 		text.setFillColor(sf::Color::White);
 		text.setPosition(10,10);
 
-		Gauge gauge1("Motor 1", -5, 5);
-		gauge1.unit = "rad/s";
+		Gauge gauge1("Motor 1", -150, 150);
+		gauge1.unit = "deg/s";
 		gauge1.setPosition(20, 100);
-		gauge1.setValue(speeds[0]);
+		gauge1.value = speeds[0]*RAD2DEG;
 
-		Gauge gauge2("Motor 1", -5, 5);
-		gauge2.unit = "rad/s";
+		Gauge gauge2("Motor 2", -150, 150);
+		gauge2.unit = "deg/s";
 		gauge2.setPosition(20, 200);
-		gauge2.setValue(speeds[1]);
+		gauge2.value = speeds[1]*RAD2DEG;
 
-		Gauge gauge3("Motor 1", -5, 5);
-		gauge3.unit = "rad/s";
+		Gauge gauge3("Motor 3", -150, 150);
+		gauge3.unit = "deg/s";
 		gauge3.setPosition(20, 300);
-		gauge3.setValue(speeds[2]);
+		gauge3.value = speeds[2]*RAD2DEG;
 
 
 		//tower

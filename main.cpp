@@ -172,7 +172,7 @@ void render(Network** n, int population, bool record, float max_time, string tit
 
 	Arm* a[population];
 
-	float points[][2] = {{1, -0.34}, {-0.13, -1.4}, {-1.7, 0.43}};
+	float points[][2] = {{1.0, -1.34}, {-0.33, -1.4}, {-1.7, 1.23}, {0.23, 1.8}};
 
 	for(int i = 0; i < population; i++){
 		a[i] = new Arm({1,1,1}, 5);
@@ -189,10 +189,12 @@ void render(Network** n, int population, bool record, float max_time, string tit
 	if(record){
 		WIDTH = 1920;
 		HEIGHT = 1080;
-		zoom = 0.02;
+		zoom = 0.015;
 	}
 
-	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Arm");
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = 8;
+	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Arm", sf::Style::Default, settings);
 	sf::View view(sf::Vector2f(0, 0), sf::Vector2f(WIDTH / 2, HEIGHT / 2));
 	sf::View default_view = window.getView();
 
@@ -208,6 +210,69 @@ void render(Network** n, int population, bool record, float max_time, string tit
 	float passed = 0;
 	float real_time = 0;
 
+	Gauge gauge1("Motor 1", -150, 150);
+	gauge1.unit = "deg/s";
+	Gauge gauge2("Motor 2", -150, 150);
+	gauge2.unit = "deg/s";
+	Gauge gauge3("Motor 3", -150, 150);
+	gauge3.unit = "deg/s";
+
+	sf::RectangleShape line;
+	line.setFillColor(sf::Color(50, 0, 0));
+
+	sf::RectangleShape ground;
+	ground.setSize(sf::Vector2f(WIDTH, HEIGHT / 2));
+	ground.setFillColor(sf::Color(15, 15, 15));
+	ground.setPosition(-WIDTH/2, 3);
+
+	sf::RectangleShape pillar;
+	pillar.setOrigin(0.07, 1.5);
+	pillar.setSize(sf::Vector2f(0.14, 5));
+	pillar.setFillColor(sf::Color(25, 25, 25));
+
+	sf::Texture target_texture;
+	target_texture.loadFromFile("textures/target.png");
+	sf::Sprite target(target_texture);
+	target_texture.setSmooth(true);
+	target.setOrigin(10, 10);
+	target.setScale(sf::Vector2f(0.007, 0.007));
+
+	sf::Text text;
+	sf::Font font;
+	font.loadFromFile("fonts/Prototype.ttf");
+	text.setFont(font);
+	text.setCharacterSize(30);
+	text.setPosition(20,20);
+	text.setFillColor(sf::Color::White);
+
+	sf::Text title_text;
+	title_text.setFont(font);
+	title_text.setString(title);
+	title_text.setCharacterSize(40);
+	title_text.setFillColor(sf::Color::White);
+	title_text.setPosition(WIDTH - title_text.getLocalBounds().width - 40, 20);
+
+	if(!record){
+		gauge1.setPosition(20, 100);
+		gauge2.setPosition(20, 200);
+		gauge3.setPosition(20, 300);
+
+		gauge1.setScale(0.2f, 0.2f);
+		gauge2.setScale(0.2f, 0.2f);
+		gauge3.setScale(0.2f, 0.2f);
+
+		text.setCharacterSize(24);
+		title_text.setCharacterSize(30);
+
+	}else{
+		gauge1.setPosition(20, 100);
+		gauge2.setPosition(20, 300);
+		gauge3.setPosition(20, 500);
+
+		gauge1.setScale(0.4f, 0.4f);
+		gauge2.setScale(0.4f, 0.4f);
+		gauge3.setScale(0.4f, 0.4f);
+	}
 
 	int p = 0;
 
@@ -267,82 +332,19 @@ void render(Network** n, int population, bool record, float max_time, string tit
 			}
 		}
 
+		gauge1.value = speeds[0]*RAD2DEG;
+		gauge2.value = speeds[1]*RAD2DEG;
+		gauge3.value = speeds[2]*RAD2DEG;
 
-		sf::RectangleShape ground;
-		ground.setSize(sf::Vector2f(WIDTH, HEIGHT / 2));
-		ground.setFillColor(sf::Color(15, 15, 15));
-		ground.setPosition(-WIDTH/2, 3);
-
-		sf::RectangleShape pillar;
-		pillar.setOrigin(0.07, 1.5);
-		pillar.setSize(sf::Vector2f(0.14, 5));
-		pillar.setFillColor(sf::Color(25, 25, 25));
-
-
-		sf::Texture target_texture;
-		target_texture.loadFromFile("textures/target.png");
-		sf::Sprite target(target_texture);
-		target.setOrigin(10, 10);
-		target.setScale(sf::Vector2f(0.01, 0.01));
 		target.setPosition(target_x, -target_y);
 
-		sf::RectangleShape line;
-		line.setFillColor(sf::Color(50, 0, 0));
 		line.setSize(sf::Vector2f(0.02, dist));
 		line.setPosition(a[0] -> getArmLocation().x, -a[0] -> getArmLocation().y);
 		line.setRotation(-90 + 180.0f/3.145f * vector2angle(target_x - a[0] -> getArmLocation().x, -target_y + a[0] -> getArmLocation().y));
 
-		sf::Text text;
-		sf::Font font;
-		font.loadFromFile("fonts/Prototype.ttf");
-		text.setFont(font);
 		char str[40];
 		sprintf(str, "Distance: %4.2f m", dist);
 		text.setString(str);
-		text.setCharacterSize(30);
-		text.setFillColor(sf::Color::White);
-		text.setPosition(20,20);
-
-		sf::Text title_text;
-		title_text.setFont(font);
-		title_text.setString(title);
-		title_text.setCharacterSize(40);
-		title_text.setFillColor(sf::Color::White);
-		title_text.setPosition(WIDTH - title_text.getLocalBounds().width - 40, 20);
-
-		Gauge gauge1("Motor 1", -150, 150);
-		gauge1.unit = "deg/s";
-		gauge1.value = speeds[0]*RAD2DEG;
-
-		Gauge gauge2("Motor 2", -150, 150);
-		gauge2.unit = "deg/s";
-		gauge2.value = speeds[1]*RAD2DEG;
-
-		Gauge gauge3("Motor 3", -150, 150);
-		gauge3.unit = "deg/s";
-		gauge3.value = speeds[2]*RAD2DEG;
-
-		if(!record){
-			gauge1.setPosition(20, 100);
-			gauge2.setPosition(20, 200);
-			gauge3.setPosition(20, 300);
-
-			gauge1.setScale(0.2f, 0.2f);
-			gauge2.setScale(0.2f, 0.2f);
-			gauge3.setScale(0.2f, 0.2f);
-
-			text.setCharacterSize(24);
-			title_text.setCharacterSize(30);
-
-		}else{
-			gauge1.setPosition(20, 100);
-			gauge2.setPosition(20, 300);
-			gauge3.setPosition(20, 500);
-
-			gauge1.setScale(0.4f, 0.4f);
-			gauge2.setScale(0.4f, 0.4f);
-			gauge3.setScale(0.4f, 0.4f);
-		}
 
 
 		//tower

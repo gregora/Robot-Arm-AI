@@ -15,10 +15,10 @@ public:
 
 	void applySpeeds(std::vector<float> speeds);
 	void applySpeed(uint index, float speed);
-	void getAngles(float* angles);
+	void getAngles(float* angles) const;
 	float getAngle(uint index);
 
-	b2Vec2 getArmLocation();
+	b2Vec2 getArmLocation() const;
 
 	void physics(float delta, bool debug = false);
 
@@ -29,6 +29,7 @@ public:
 
 private:
 	std::vector<float> lengths;
+	sf::Texture texture;
 };
 
 

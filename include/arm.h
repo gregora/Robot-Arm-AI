@@ -10,7 +10,7 @@ class Arm : public sf::Drawable, public sf::Transformable {
 
 public:
 	b2World* world;
-	Arm(std::vector<float> lengths, float max_torque = 1);
+	Arm(std::vector<float> lengths, float max_torque = 1, bool load_texture = true);
 	~Arm();
 
 	void applySpeeds(std::vector<float> speeds);

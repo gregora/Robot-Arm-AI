@@ -10,8 +10,8 @@ using namespace std;
 using namespace nnlib;
 
 #define SAMPLES 100
-#define TIME 7
-#define SAVE_PERIOD 10
+#define TIME 3
+#define SAVE_PERIOD 1
 
 void render(Network** n, int population, bool record = false, float max_time = 0, string title = "");
 void save_population(Network ** networks, uint population, string folder);
@@ -19,7 +19,7 @@ void load_population(Network ** networks, uint population, string folder);
 
 float evaluate(Network* n, float target_x, float target_y){
 
-		Arm a({1,1,1}, 20);
+		Arm a({1,1,1}, 20, false);
 
 		float delta = 1/60.0f;
 		float passed = 0;
@@ -161,7 +161,7 @@ int main(int argsn, char** args){
 		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS)+"/");
 
 	}else{
-		render(networks, POPULATION, RENDER, 24, "GENERATION " + to_string(generation));
+		render(networks, POPULATION, RENDER, 32, "GENERATION " + to_string(generation));
 	}
 
 

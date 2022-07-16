@@ -6,21 +6,31 @@
 
 #define RAD2DEG 57.325
 
-class Arm : public sf::Drawable, public sf::Transformable {
+class PhysicsArm {
+	public:
+		PhysicsArm(std::vector<float> lengths, float max_torque = 1);
+		~PhysicsArm();
+
+		b2World* world;
+
+		void applySpeeds(std::vector<float> speeds);
+		void getAngles(float* angles) const;
+
+		b2Vec2 getArmLocation() const;
+
+		void physics(float delta, bool debug = false);
+
+		std::vector<float> lengths;
+	private:
+
+};
+
+
+class Arm : public PhysicsArm, public sf::Drawable, public sf::Transformable {
 
 public:
-	b2World* world;
-	Arm(std::vector<float> lengths, float max_torque = 1, bool load_texture = true);
+	Arm(std::vector<float> lengths, float max_torque = 1);
 	~Arm();
-
-	void applySpeeds(std::vector<float> speeds);
-	void applySpeed(uint index, float speed);
-	void getAngles(float* angles) const;
-	float getAngle(uint index);
-
-	b2Vec2 getArmLocation() const;
-
-	void physics(float delta, bool debug = false);
 
 	uint8 opacity = 255;
 
@@ -28,7 +38,6 @@ public:
 	bool draw_arrow = false;
 
 private:
-	std::vector<float> lengths;
 	sf::Texture texture;
 };
 

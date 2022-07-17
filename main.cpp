@@ -9,7 +9,7 @@
 using namespace std;
 using namespace nnlib;
 
-#define SAMPLES 10
+#define SAMPLES 100
 #define TIME 5
 #define SAVE_PERIOD 10
 
@@ -140,7 +140,7 @@ int main(int argsn, char** args){
 		recompute_parents: false, //recompute parents (for non-deterministic evaluation functions)
 		multithreading: MULTITHREADING,
 
-		save_period: 10,
+		save_period: SAVE_PERIOD,
 		path: "networks/",
 		start_generation: generation,
 

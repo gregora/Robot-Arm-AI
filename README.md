@@ -22,8 +22,10 @@ To train your network you need to run a command `./main.out -population [populat
 
 Your networks will be saved every 10 generations into the  `networks/` folder.
 
+To load a saved generation simply add `-load [generation]` to your command line arguments.
+
 #### Loading already trained networks
 
-To load a network you must run a command `./main.out -display [generation] -population [number of arms to render]`.
+To load a network you must run a command `./main.out -display [generation] -population [population]`.
 
 There are already pretrained networks of 1000th generation in the `networks/` folder, that you can run with `./main.out -display 1000 -population 100`.

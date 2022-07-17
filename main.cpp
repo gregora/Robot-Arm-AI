@@ -9,13 +9,11 @@
 using namespace std;
 using namespace nnlib;
 
-#define SAMPLES 100
+#define SAMPLES 10
 #define TIME 5
 #define SAVE_PERIOD 10
 
 void render(Network** n, int population, bool record = false, float max_time = 0, string title = "");
-void save_population(Network ** networks, uint population, string folder);
-void load_population(Network ** networks, uint population, string folder);
 
 float evaluate(Network* n, float target_x, float target_y){
 
@@ -127,12 +125,12 @@ int main(int argsn, char** args){
 		}
 
 	}else{
-		load_population(networks, POPULATION, "networks/"+to_string(generation)+"/");
+		load_population(networks, POPULATION, "networks/Generation"+to_string(generation)+"/");
 	}
 
 	gen_settings settings = {
 		population: POPULATION,
-		generations: SAVE_PERIOD + 1, //number of generations to run
+		generations: GENERATIONS, //number of generations to run
 		mutation_rate: 0.2, //number of mutations on each child
 
 		rep_coef: 0.1, //percent of population to reproduce
@@ -142,24 +140,15 @@ int main(int argsn, char** args){
 		recompute_parents: false, //recompute parents (for non-deterministic evaluation functions)
 		multithreading: MULTITHREADING,
 
-		output: true,
-		start_generation: generation
+		save_period: 10,
+		path: "networks/",
+		start_generation: generation,
+
+		output: true
 	};
 
 	if(!display){
-		//save every SAVE_PERIOD generations
-		for(int i = SAVE_PERIOD; i <= GENERATIONS; i+=SAVE_PERIOD){
-			genetic(networks, evaluate, settings);
-			printf("\nSaving networks ...\n\n\n\n");
-			save_population(networks, POPULATION, "networks/" + to_string(generation + i)+"/");
-			settings.start_generation = settings.start_generation + SAVE_PERIOD;
-		}
-
-		settings.generations = (GENERATIONS % SAVE_PERIOD) + 1;
 		genetic(networks, evaluate, settings);
-		printf("\nSaving networks ...\n\n\n\n");
-		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS)+"/");
-
 	}else{
 		render(networks, POPULATION, RENDER, 27.5, "GENERATION " + to_string(generation));
 	}
@@ -423,24 +412,6 @@ void render(Network** n, int population, bool record, float max_time, string tit
 
 	}
 
-}
-
-
-void save_population(Network ** networks, uint population, string folder){
-
-	mkdir(folder.c_str(), 0777);
-
-	for(uint i = 0; i < population; i++){
-		networks[i] -> save(folder + to_string(i) + ".AI");
-	}
-
-}
-
-void load_population(Network ** networks, uint population, string folder){
-	for(uint i = 0; i < population; i++){
-		networks[i] = new Network;
-		networks[i] -> load(folder + to_string(i) + ".AI");
-	}
 }
 
 

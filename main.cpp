@@ -161,7 +161,7 @@ int main(int argsn, char** args){
 		save_population(networks, POPULATION, "networks/" + to_string(generation + GENERATIONS)+"/");
 
 	}else{
-		render(networks, POPULATION, RENDER, 32, "GENERATION " + to_string(generation));
+		render(networks, POPULATION, RENDER, 27.5, "GENERATION " + to_string(generation));
 	}
 
 
@@ -172,12 +172,12 @@ void render(Network** n, int population, bool record, float max_time, string tit
 
 	Arm* a[population];
 
-	float points[][2] = {{1.0, -1.34}, {-0.33, -1.4}, {-1.7, 1.23}, {0.23, 1.8}};
+	float points[][2] = {{1.0, -1.34}, {-1.2, 0.56}, {-1.7, 1.23}, {1, 1}, {-1, -1.5}};
 
 	for(int i = 0; i < population; i++){
 		a[i] = new Arm({1,1,1}, 5);
 		if(i != 0){
-			a[i] -> opacity = 50;
+			a[i] -> opacity = 70;
 		}
 	}
 
@@ -218,7 +218,7 @@ void render(Network** n, int population, bool record, float max_time, string tit
 	gauge3.unit = "deg/s";
 
 	sf::RectangleShape line;
-	line.setFillColor(sf::Color(50, 0, 0));
+	line.setFillColor(sf::Color(80, 0, 0));
 
 	sf::RectangleShape ground;
 	ground.setSize(sf::Vector2f(WIDTH, HEIGHT / 2));
@@ -366,12 +366,13 @@ void render(Network** n, int population, bool record, float max_time, string tit
 		window.draw(ground);
 
 
-		window.draw(line);
-		window.draw(target);
-
-		for(int i = population - 1; i >= 0; i--){
+		for(int i = population - 1; i > 0; i--){
 			window.draw(*a[i]);
 		}
+
+		window.draw(line);
+		window.draw(target);
+		window.draw(*a[0]);
 
 		window.setView(default_view);
 		window.draw(text);
@@ -394,13 +395,12 @@ void render(Network** n, int population, bool record, float max_time, string tit
 				return;
 			}
 
-			if(passed >= TIME + 1){
+			if(passed >= TIME + 0.5){
 				passed = 0;
 				p++;
 				target_x = points[p][0];
 				target_y = points[p][1];
 			}
-
 		}
 
 		passed+=d;

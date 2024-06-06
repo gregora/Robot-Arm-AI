@@ -1,5 +1,17 @@
 # Robot-Arm-AI
-A project for training a neural network to control a robotic arm
+A project for training a neural network to control a robotic arm.
+
+## Problem
+Solving inverse kinematics can often be challenging in complex robots. This project tries to illustrate how neural networks can be taught to solve such problems.
+The robot is a simple planar arm with 3 sections and the whole project is simply a proof of concept.
+
+## Results
+1000 generations were needed for great results. However, I think the method has proven itself - at least for simple robots.
+
+https://github.com/gregora/Robot-Arm-AI/assets/26600857/820e87c5-0127-4b7d-af2a-d16c778b5e73
+
+Accompanying Youtube video: [https://youtu.be/oZJqmPPVW6Q?si=ku-KLPI7Qgqxm4LI](https://youtu.be/oZJqmPPVW6Q?si=ku-KLPI7Qgqxm4LI)
+
 
 ## Dependencies
 * `lib/libarm.a` - [Robot-Arm](https://github.com/gregora/Robot-Arm)
